@@ -10,7 +10,7 @@ import (
 
 type SendFailedFn = func(error)
 
-type LogClient struct {
+type AsyncLogClient struct {
 	remoteAddr   string
 	streamClient net.Conn
 	closeChan    chan struct{}
@@ -21,13 +21,14 @@ type LogClient struct {
 
 const (
 	defaultBufferSize = 100
+	backOffSeconds    = 1.0
 )
 
-func NewLogClient(name string, remoteAddr string, fn SendFailedFn) *LogClient {
-	return NewLogClientWithBuffer(name, remoteAddr, fn, defaultBufferSize)
+func NewAsyncLogClient(name string, remoteAddr string, fn SendFailedFn) *AsyncLogClient {
+	return NewAsyncLogClientWithBuffer(name, remoteAddr, fn, defaultBufferSize)
 }
-func NewLogClientWithBuffer(name string, remoteAddr string, fn SendFailedFn, bufferSize int) *LogClient {
-	c := &LogClient{
+func NewAsyncLogClientWithBuffer(name string, remoteAddr string, fn SendFailedFn, bufferSize int) *AsyncLogClient {
+	c := &AsyncLogClient{
 		name:       name,
 		remoteAddr: remoteAddr,
 		buffer:     make(chan []byte, bufferSize),
@@ -38,7 +39,7 @@ func NewLogClientWithBuffer(name string, remoteAddr string, fn SendFailedFn, buf
 	return c
 }
 
-func (l *LogClient) Write(p []byte) (n int, err error) {
+func (l *AsyncLogClient) Write(p []byte) (n int, err error) {
 	select {
 	case l.buffer <- p:
 		break
@@ -48,14 +49,13 @@ func (l *LogClient) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (l *LogClient) Close() error {
+func (l *AsyncLogClient) Close() error {
 	close(l.closeChan)
 	return nil
 }
 
-func (l *LogClient) loop() {
+func (l *AsyncLogClient) loop() {
 	lastConnect := time.Now().Add(-2 * time.Second)
-	backOffSeconds := 1.0
 	write := func(data []byte) {
 		var err error
 		if l.streamClient == nil {

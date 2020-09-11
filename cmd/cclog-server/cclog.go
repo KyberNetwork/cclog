@@ -20,8 +20,8 @@ var sugar = zap.NewExample().Sugar()
 
 func main() {
 	app := app.NewApp()
-	app.Name = "Binance User Data Stream"
-	app.Usage = "App to handle binance user data stream"
+	app.Name = "Log Server"
+	app.Usage = "Log Server to receive log from services"
 	app.Action = run
 
 	app.Flags = append(app.Flags,
