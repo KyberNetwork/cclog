@@ -20,10 +20,13 @@ type LogClient struct {
 }
 
 const (
-	bufferSize = 100
+	defaultBufferSize = 100
 )
 
 func NewLogClient(name string, remoteAddr string, fn SendFailedFn) *LogClient {
+	return NewLogClientWithBuffer(name, remoteAddr, fn, defaultBufferSize)
+}
+func NewLogClientWithBuffer(name string, remoteAddr string, fn SendFailedFn, bufferSize int) *LogClient {
 	c := &LogClient{
 		name:       name,
 		remoteAddr: remoteAddr,
