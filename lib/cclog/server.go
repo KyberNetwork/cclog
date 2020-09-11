@@ -40,5 +40,8 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) Shutdown() error {
-	return s.listener.Close()
+	if s.listener != nil {
+		return s.listener.Close()
+	}
+	return nil
 }
