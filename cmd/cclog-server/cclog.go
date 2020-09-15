@@ -6,8 +6,8 @@ import (
 	"github.com/urfave/cli"
 	"go.uber.org/zap"
 
-	"cclog/lib/app"
-	"cclog/lib/cclog"
+	"github.com/KyberNetwork/cclog/lib/app"
+	"github.com/KyberNetwork/cclog/lib/server"
 )
 
 const (
@@ -20,8 +20,8 @@ var sugar = zap.NewExample().Sugar()
 
 func main() {
 	app := app.NewApp()
-	app.Name = "Binance User Data Stream"
-	app.Usage = "App to handle binance user data stream"
+	app.Name = "Log Server"
+	app.Usage = "Log Server to receive log from services"
 	app.Action = run
 
 	app.Flags = append(app.Flags,
@@ -65,8 +65,8 @@ func run(c *cli.Context) error {
 	if maxSize <= 0 {
 		sugar.Fatalw("max size should > 0")
 	}
-	wm := cclog.NewWriterMan(c.String(flagBaseDir), maxSize*1024*1024)
-	server := cclog.NewServer(c.String(flagBindAddr), wm)
+	wm := server.NewWriterMan(c.String(flagBaseDir), maxSize*1024*1024)
+	server := server.NewServer(c.String(flagBindAddr), wm)
 	sugar.Infow("server now start", "bind_addr", c.String(flagBindAddr))
 	return server.Start()
 }

@@ -9,11 +9,11 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"cclog/lib/cclog/client"
+	"github.com/KyberNetwork/cclog/lib/client"
 )
 
 func main() {
-	w2 := client.NewLogClient("test", "localhost:4560", func(err error) {
+	w2 := client.NewAsyncLogClient("test", "localhost:4560", func(err error) {
 		fmt.Println("err", err)
 	})
 	w := io.MultiWriter(os.Stdout, w2)

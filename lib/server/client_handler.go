@@ -1,4 +1,4 @@
-package cclog
+package server
 
 import (
 	"net"
@@ -6,7 +6,15 @@ import (
 
 	"go.uber.org/zap"
 
-	"cclog/lib/common"
+	"github.com/KyberNetwork/cclog/lib/common"
+)
+
+const (
+	readBufferSize = 1 << 14
+)
+
+var (
+	nameGrep = regexp.MustCompile(`^[0-9a-zA-Z-_]+$`)
 )
 
 type ClientHandler struct {
@@ -22,10 +30,6 @@ func NewClientHandler(c net.Conn, wm *WriterMan) *ClientHandler {
 		l:    zap.S(),
 	}
 }
-
-var (
-	nameGrep = regexp.MustCompile(`^[0-9a-zA-Z-_]+$`)
-)
 
 func (c *ClientHandler) Stop() {
 	_ = c.conn.Close()
@@ -59,7 +63,7 @@ func (c *ClientHandler) Run() {
 	remote := c.conn.RemoteAddr()
 	l := c.l.With("from", remote.String(), "name", req.Name)
 	wLog := c.wMan.GetOrCreate(req.Name)
-	buff := make([]byte, 4096)
+	buff := make([]byte, readBufferSize)
 	for {
 		n, err := c.conn.Read(buff)
 		if err != nil {
