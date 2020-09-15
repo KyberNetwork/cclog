@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"cclog/lib/common"
+	"github.com/KyberNetwork/cclog/lib/common"
 )
 
 type SyncLogClient struct {
