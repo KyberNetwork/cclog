@@ -1,4 +1,4 @@
-module cclog
+module github.com/KyberNetwork/cclog
 
 go 1.15
 

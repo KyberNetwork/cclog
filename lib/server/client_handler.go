@@ -1,4 +1,4 @@
-package cclog
+package server
 
 import (
 	"net"
@@ -6,7 +6,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"cclog/lib/common"
+	"github.com/KyberNetwork/cclog/lib/common"
 )
 
 const (

@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	"cclog/lib/cclog/client"
+	"github.com/KyberNetwork/cclog/lib/client"
 )
 
 func main() {

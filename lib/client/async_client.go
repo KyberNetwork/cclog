@@ -5,7 +5,7 @@ import (
 	"net"
 	"time"
 
-	"cclog/lib/common"
+	"github.com/KyberNetwork/cclog/lib/common"
 )
 
 type SendFailedFn = func(error)

@@ -7,7 +7,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	"cclog/lib/cclog/client"
+	"github.com/KyberNetwork/cclog/lib/client"
 )
 
 const (

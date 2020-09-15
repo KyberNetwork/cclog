@@ -1,4 +1,4 @@
-package cclog
+package server
 
 import (
 	"testing"
