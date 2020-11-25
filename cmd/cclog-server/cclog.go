@@ -62,7 +62,7 @@ func run(c *cli.Context) error {
 	defer f()
 	zap.ReplaceGlobals(sugar.Desugar())
 	maxSize := c.Uint64(flagMaxFileSize)
-	if maxSize <= 0 {
+	if maxSize == 0 {
 		sugar.Fatalw("max size should > 0")
 	}
 	wm := server.NewWriterMan(c.String(flagBaseDir), maxSize*1024*1024)
