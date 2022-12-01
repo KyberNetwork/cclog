@@ -31,7 +31,7 @@ func NewRotateLogWriter(baseDir string, name string, maxSize uint64) *RotateLogW
 
 func (r *RotateLogWriter) createOrOpenFile() (*os.File, string, uint64, error) {
 	currentFileName := path.Join(r.baseDir, r.name)
-	currentFile, err := os.OpenFile(currentFileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
+	currentFile, err := os.OpenFile(currentFileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		return nil, "", 0, err
 	}
