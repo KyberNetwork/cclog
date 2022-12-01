@@ -1,4 +1,20 @@
-FROM alpine:3.12.0
-WORKDIR /app
-COPY ./cmd/cclog-server/cclog-server /app/cmd
-CMD ["/app/cmd"]
+## BUILDER
+FROM golang:1.19 as builder
+
+WORKDIR /src
+
+COPY . .
+
+RUN go build -o app ./cmd/cclog-server
+
+FROM debian:stretch
+
+RUN apt-get update && \
+    apt install -y ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /cmd
+
+COPY --from=builder /src/app /app/cmd
+
+ENTRYPOINT /app/cmd
