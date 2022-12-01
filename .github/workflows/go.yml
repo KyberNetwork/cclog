@@ -19,14 +19,13 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v1
-
-      - name: Run golangci-lint
-        uses: actions-contrib/golangci-lint@v1
-        env:
-          GOROOT: ""
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
         with:
-          args: run --config .golangci.yml ./...
-          golangci_lint_version: v1.23
+          version: v1.46.2
+          args: --config=.golangci.yml
+          skip-pkg-cache: true
+          skip-build-cache: true
 
   test:
     name: Test
