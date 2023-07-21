@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	w2 := client.NewAsyncLogClient("test", "localhost:4560", func(err error) {
+	w2 := client.NewAsyncLogClient("test", "10.148.0.119:4560", func(err error) {
 		fmt.Println("err", err)
 	})
 	w := io.MultiWriter(os.Stdout, w2)
