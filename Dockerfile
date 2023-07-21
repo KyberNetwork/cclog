@@ -7,7 +7,7 @@ COPY . .
 
 RUN go build -o app ./cmd/cclog-server
 
-FROM debian:stretch
+FROM debian:bullseye
 
 RUN apt-get update && \
     apt install -y ca-certificates && \
