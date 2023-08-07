@@ -44,7 +44,7 @@ func (l *AsyncLogClient) Write(p []byte) (n int, err error) {
 	case l.buffer <- p:
 		break
 	default:
-		l.failedFn(fmt.Errorf("failed to append log"))
+		l.failedFn(fmt.Errorf("failed to append log, message size: %d", len(p)))
 	}
 	return len(p), nil
 }
