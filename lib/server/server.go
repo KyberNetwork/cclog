@@ -37,7 +37,7 @@ func (s *Server) Start() error {
 		{
 			if t, ok := c.(*net.TCPConn); ok {
 				err := t.SetReadBuffer(1024 * 1024)
-				s.l.Debugw("set receive buffer", "err", err)
+				s.l.Infow("set receive buffer", "err", err)
 			}
 		}
 		cc := NewClientHandler(c, s.wm)
