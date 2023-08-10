@@ -70,6 +70,11 @@ func (l *AsyncLogClient) loop() {
 				l.failedFn(fmt.Errorf("failed to connect, %w", err))
 				return
 			}
+			if t, ok := l.streamClient.(*net.TCPConn); ok {
+				if err = t.SetWriteBuffer(1024 * 1024); err != nil {
+					l.failedFn(fmt.Errorf("set write buffer failed: %v", err))
+				}
+			}
 			err = common.WriteConnectRequest(l.streamClient, common.ConnectRequest{Name: l.name})
 			if err != nil {
 				l.failedFn(fmt.Errorf("write connect request failed, %w", err))
