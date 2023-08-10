@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	readBufferSize = 1 << 14
+	readBufferSize = 1 << 20
 )
 
 var (
