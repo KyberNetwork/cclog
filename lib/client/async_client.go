@@ -2,12 +2,13 @@ package client
 
 import (
 	"fmt"
-	"github.com/KyberNetwork/cclog/lib/agent"
-	"github.com/pierrec/lz4/v3"
 	"io"
 	"log"
 	"net"
 	"time"
+
+	"github.com/KyberNetwork/cclog/lib/agent"
+	"github.com/pierrec/lz4/v3"
 
 	"github.com/KyberNetwork/cclog/lib/common"
 )
@@ -30,6 +31,7 @@ const (
 func NewAsyncLogClient(name string, remoteAddr string, fn SendFailedFn) *AsyncLogClient {
 	return NewAsyncLogClientWithBuffer(name, remoteAddr, fn, true)
 }
+
 func NewAsyncLogClientWithBuffer(name string, remoteAddr string, fn SendFailedFn, compression bool) *AsyncLogClient {
 	c := &AsyncLogClient{
 		name:        name,
