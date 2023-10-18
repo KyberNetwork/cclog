@@ -1,6 +1,8 @@
 package app
 
 import (
+	"os"
+
 	"github.com/TheZeroSlave/zapsentry"
 	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
@@ -51,8 +53,13 @@ func NewFlusher(s syncer) func() {
 
 // NewLogger creates a new logger instance.
 // The type of logger instance will be different with different application running modes.
-func NewLogger(c *cli.Context) (*zap.Logger, error) {
-	return zap.NewProduction()
+func newLogger() (*zap.Logger, zap.AtomicLevel) {
+	atom := zap.NewAtomicLevelAt(zap.DebugLevel)
+	pConf := zap.NewProductionEncoderConfig()
+	pConf.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoder := zapcore.NewConsoleEncoder(pConf)
+	l := zap.New(zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), atom), zap.AddCaller())
+	return l, atom
 }
 
 // NewSugaredLogger creates a new sugared logger and a flush function. The flush function should be
@@ -60,10 +67,7 @@ func NewLogger(c *cli.Context) (*zap.Logger, error) {
 // This function should be use most of the time unless
 // the application requires extensive performance, in this case use NewLogger.
 func NewSugaredLogger(c *cli.Context) (*zap.SugaredLogger, func(), error) {
-	logger, err := NewLogger(c)
-	if err != nil {
-		return nil, nil, err
-	}
+	logger, _ := newLogger()
 	// init sentry if flag dsn exists
 	if len(c.String(sentryDSNFlag)) != 0 {
 		sentryClient, err := sentry.NewClient(
