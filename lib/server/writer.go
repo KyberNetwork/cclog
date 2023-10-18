@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path"
@@ -12,7 +11,6 @@ import (
 
 type RotateLogWriter struct {
 	currentFile     *os.File
-	currentWriter   *bufio.Writer
 	currentFileName string
 	lock            sync.Mutex
 	baseDir         string
@@ -53,13 +51,8 @@ func (r *RotateLogWriter) Write(p []byte) (n int, err error) {
 		if err != nil {
 			return 0, err
 		}
-		if r.currentWriter != nil {
-			r.currentWriter.Reset(r.currentFile)
-		} else {
-			r.currentWriter = bufio.NewWriterSize(r.currentFile, 16*1024)
-		}
 	}
-	n, err = r.currentWriter.Write(p)
+	n, err = r.currentFile.Write(p)
 	if n < 0 {
 		panic("bytes written negative")
 	}
@@ -74,7 +67,6 @@ func (r *RotateLogWriter) Write(p []byte) (n int, err error) {
 }
 
 func (r *RotateLogWriter) rotate() error {
-	_ = r.currentWriter.Flush()
 	defer func() {
 		r.currentFileName = ""
 	}()
