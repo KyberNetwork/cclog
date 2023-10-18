@@ -1,12 +1,13 @@
 package server
 
 import (
+	"io"
 	"net"
 	"regexp"
 
-	"go.uber.org/zap"
-
 	"github.com/KyberNetwork/cclog/lib/common"
+	"github.com/pierrec/lz4/v3"
+	"go.uber.org/zap"
 )
 
 const (
@@ -64,12 +65,17 @@ func (c *ClientHandler) Run() {
 	l := c.l.With("from", remote.String(), "name", req.Name)
 	wLog := c.wMan.GetOrCreate(req.Name)
 	buff := make([]byte, readBufferSize)
+	var r io.Reader = c.conn
+	if req.Compression {
+		r = lz4.NewReader(c.conn)
+	}
 	for {
-		n, err := c.conn.Read(buff)
+		n, err := r.Read(buff)
 		if err != nil {
 			l.Errorw("read failed", "err", err)
 			break
 		}
+		l.Infow("receive record", "len", n)
 		nw, err := wLog.Write(buff[:n])
 		if err != nil {
 			l.Errorw("write failed", "err", err)

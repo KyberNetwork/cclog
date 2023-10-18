@@ -34,12 +34,6 @@ func (s *Server) Start() error {
 			s.l.Errorw("accept failed", "err", err)
 			return err
 		}
-		{
-			if t, ok := c.(*net.TCPConn); ok {
-				err := t.SetReadBuffer(1024 * 1024)
-				s.l.Infow("set receive buffer", "err", err)
-			}
-		}
 		cc := NewClientHandler(c, s.wm)
 		go cc.Run()
 	}

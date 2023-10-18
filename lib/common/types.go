@@ -10,12 +10,13 @@ import (
 )
 
 type ConnectRequest struct {
-	Name string
+	Name        string `json:"name"`
+	Compression bool   `json:"compression"`
 }
 
 type ConnectResponse struct {
-	Success bool
-	Status  string
+	Success bool   `json:"success"`
+	Status  string `json:"status"`
 }
 
 func encodeMessage(data interface{}) ([]byte, error) {
