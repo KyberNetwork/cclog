@@ -75,7 +75,6 @@ func (c *ClientHandler) Run() {
 			l.Errorw("read failed", "err", err)
 			break
 		}
-		l.Infow("receive record", "len", n)
 		nw, err := wLog.Write(buff[:n])
 		if err != nil {
 			l.Errorw("write failed", "err", err)
