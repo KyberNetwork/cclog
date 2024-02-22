@@ -101,8 +101,8 @@ func (f Finder) GetLogRecord(logName string, reqID string) (string, error) {
 			return "", fmt.Errorf("cannot read line: %w", err)
 		}
 		if strings.Contains(line, reqID) {
-			if openJson := strings.Index(line, "{"); openJson >= 0 {
-				return line[openJson:], nil
+			if jsonOpen := strings.Index(line, "{"); jsonOpen >= 0 {
+				return line[jsonOpen:], nil
 			}
 			return line, nil
 		}
@@ -111,11 +111,11 @@ func (f Finder) GetLogRecord(logName string, reqID string) (string, error) {
 
 func (f Finder) tryCurrentFile(logName string, recordTime time.Time) (*Result, error) {
 	currentFilePath := filepath.Join(f.baseLocation, logName+".log")
-	//currentFile, err := os.Stat(currentFilePath)
-	//if err != nil {
-	//	return nil, fmt.Errorf("cannot stats current file %s: %w", currentFilePath, err)
-	//}
-	// if currentFile.ModTime().Before(recordTime) {
+	/*currentFile, err := os.Stat(currentFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("cannot stats current file %s: %w", currentFilePath, err)
+	}
+	if currentFile.ModTime().Before(recordTime) {*/
 	fs, err := os.Open(currentFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open current file %s: %w", currentFilePath, err)
@@ -127,8 +127,6 @@ func (f Finder) tryCurrentFile(logName string, recordTime time.Time) (*Result, e
 			return fs.Close()
 		},
 	}, nil
-	//}
-	//return nil, fmt.Errorf("end in local search")
 }
 
 func (f Finder) FindFile(logName, reqID string) (*Result, error) {
