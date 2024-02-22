@@ -6,6 +6,7 @@ on:
       - staging
       - develop
       - ci
+      - debug*
   pull_request:
 env:
   SERVICE: cclog
@@ -63,16 +64,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.22
 
       - name: Check out code
         uses: actions/checkout@v1
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.46.2
+          version: v1.52.2
           args: --config=.golangci.yml
           skip-pkg-cache: true
           skip-build-cache: true
@@ -82,9 +83,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.22
 
       - name: Check out code
         uses: actions/checkout@v1
@@ -118,12 +119,12 @@ jobs:
         if: github.event_name != 'pull_request'
 
       - name: Gcloud Auth
-        uses: google-github-actions/auth@v0
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCR_CREDENTIALS }}'
 
       - name: Setup Gcloud SDK
-        uses: google-github-actions/setup-gcloud@v0
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Configure docker
         run: gcloud auth configure-docker
