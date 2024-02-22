@@ -52,8 +52,8 @@ func (c GCSClient) ListFiles(bucketName string, q *storage.Query) ([]LocalFile, 
 
 func (c GCSClient) OpenFile(bucket, object string) (io.ReadCloser, error) {
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Second*120)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(ctx, time.Second*120)
+	// defer cancel()
 	rc, err := c.client.Bucket(bucket).Object(object).NewReader(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("Object(%q).NewReader: %w", object, err)

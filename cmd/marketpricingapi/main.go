@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 	"os"
 
 	"cloud.google.com/go/storage"
@@ -15,6 +17,7 @@ import (
 const (
 	flagBaseDir  = "base-dir"
 	flagBindAddr = "bind-addr"
+	flagBucketID = "bucket-id"
 )
 
 var sugar = zap.NewExample().Sugar()
@@ -29,8 +32,14 @@ func main() {
 		cli.StringFlag{
 			Name:   flagBaseDir,
 			Usage:  "log file base dir",
-			Value:  "data/log/",
+			Value:  "/var/lib/kyber-cclog/data/prod-market-pricing",
 			EnvVar: "LOG_BASE_DIR",
+		},
+		cli.StringFlag{
+			Name:   flagBucketID,
+			Usage:  "bucket id",
+			Value:  "internal-cclog-8aa125ee",
+			EnvVar: "BUCKET_ID",
 		},
 		cli.StringFlag{
 			Name:   flagBindAddr,
@@ -44,6 +53,17 @@ func main() {
 		sugar.Errorw("service stopped", "error", err)
 		_ = sugar.Sync()
 	}
+}
+
+func writeJSON(w http.ResponseWriter, code int, data interface{}) error {
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_, err = w.Write(dataBytes)
+	return err
 }
 
 func run(c *cli.Context) error {
@@ -68,17 +88,25 @@ func run(c *cli.Context) error {
 	if err != nil {
 		l.Fatalf("Failed to create client: %v", err)
 	}
-	defer client.Close()
-
-	id := "cnapifvdqqbb5kth3kh0" //"cna6q3fdqqbb5ksd8sr0"
-	bucketName := "internal-cclog-8aa125ee"
+	defer func() {
+		_ = client.Close()
+	}()
 	finder := NewFinder(NewGCSClient(client),
-		"/var/lib/kyber-cclog/data/prod-market-pricing", bucketName)
-	res, err := finder.GetLogRecord("prod-market-pricing", id)
-	if err != nil {
-		panic(err)
-	}
-	// fmt.Println("result:", res)
-	os.WriteFile("/home/secmask/result.txt", []byte(res), 0o644)
+		c.String(flagBaseDir), c.String(flagBucketID))
+	http.HandleFunc("GET /orderbook/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		if id == "" {
+			_ = writeJSON(w, http.StatusBadRequest, map[string]string{"err": "empty id"})
+			return
+		}
+		data, err := finder.GetLogRecord("prod-market-pricing", id)
+		if err != nil {
+			_ = writeJSON(w, http.StatusBadRequest, map[string]string{"err": err.Error()})
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(data))
+	})
+	l.Fatal(http.ListenAndServe(c.String(flagBindAddr), nil))
 	return nil
 }

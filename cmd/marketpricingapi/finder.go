@@ -93,16 +93,42 @@ func (f Finder) GetLogRecord(logName string, reqID string) (string, error) {
 	defer func() {
 		_ = res.Close()
 	}()
+	f.l.Debugw("resolve find", "file", res.FileName)
 	buffReader := bufio.NewReader(res.Data)
 	for {
 		line, err := buffReader.ReadString('\n')
 		if err != nil {
 			return "", fmt.Errorf("cannot read line: %w", err)
 		}
-		if strings.Index(line, reqID) >= 0 {
+		if strings.Contains(line, reqID) {
+			if openJson := strings.Index(line, "{"); openJson >= 0 {
+				return line[openJson:], nil
+			}
 			return line, nil
 		}
 	}
+}
+
+func (f Finder) tryCurrentFile(logName string, recordTime time.Time) (*Result, error) {
+	currentFilePath := filepath.Join(f.baseLocation, logName+".log")
+	//currentFile, err := os.Stat(currentFilePath)
+	//if err != nil {
+	//	return nil, fmt.Errorf("cannot stats current file %s: %w", currentFilePath, err)
+	//}
+	// if currentFile.ModTime().Before(recordTime) {
+	fs, err := os.Open(currentFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("cannot open current file %s: %w", currentFilePath, err)
+	}
+	return &Result{
+		FileName: filepath.Base(currentFilePath),
+		Data:     fs,
+		closeFn: func() error {
+			return fs.Close()
+		},
+	}, nil
+	//}
+	//return nil, fmt.Errorf("end in local search")
 }
 
 func (f Finder) FindFile(logName, reqID string) (*Result, error) {
@@ -118,25 +144,7 @@ func (f Finder) FindFile(logName, reqID string) (*Result, error) {
 	}
 
 	if len(archiveFiles) == 0 {
-		currentFilePath := fmt.Sprintf("%s.log", logName)
-		currentFile, err := os.Stat(currentFilePath)
-		if err != nil {
-			return nil, fmt.Errorf("cannot stats current file %s: %w", currentFilePath, err)
-		}
-		if currentFile.ModTime().Before(recordTime) {
-			fs, err := os.Open(currentFilePath)
-			if err != nil {
-				return nil, fmt.Errorf("cannot open current file %s: %w", currentFilePath, err)
-			}
-			return &Result{
-				FileName: filepath.Base(currentFilePath),
-				Data:     fs,
-				closeFn: func() error {
-					return fs.Close()
-				},
-			}, nil
-		}
-		return nil, fmt.Errorf("end in local search")
+		return f.tryCurrentFile(logName, recordTime)
 	}
 	if recordTime.After(archiveFiles[0].Time) { // record time in archive file range
 		for _, v := range archiveFiles {
@@ -161,7 +169,7 @@ func (f Finder) FindFile(logName, reqID string) (*Result, error) {
 				}, nil
 			}
 		}
-		return nil, fmt.Errorf("file should be at local but not found")
+		return f.tryCurrentFile(logName, recordTime)
 	}
 	return f.findGCS(logName, recordTime)
 }
